@@ -12,8 +12,8 @@ ensure_dir('images/Right')
 ensure_dir('images/Left')
 
 # Open the cameras
-cap_right = cv2.VideoCapture(1)  # Index 1 for the right camera
-cap_left = cv2.VideoCapture(0)  # Index 0 for the left camera
+cap_right = cv2.VideoCapture(2)  # Index 1 for the right camera
+cap_left = cv2.VideoCapture(1)  # Index 0 for the left camera
 
 cap_left.set(cv2.CAP_PROP_AUTOFOCUS, 0)
 cap_right.set(cv2.CAP_PROP_AUTOFOCUS, 0)
@@ -21,8 +21,8 @@ cap_right.set(cv2.CAP_PROP_AUTOFOCUS, 0)
 cap_left.set(cv2.CAP_PROP_FOCUS, 50)
 cap_right.set(cv2.CAP_PROP_FOCUS, 50)
 
-cap_left.set(3, 1920)
-cap_right.set(3, 1920)
+# cap_left.set(3, 1920)
+# cap_right.set(3, 1920)
 
 
 if not cap_right.isOpened() or not cap_left.isOpened():

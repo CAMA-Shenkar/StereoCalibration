@@ -36,5 +36,5 @@ def open_camera(index=0):
     cv.destroyAllWindows()
 
 if __name__ == "__main__":
-    open_camera(0)  # Change the index here if needed
+    open_camera(1)  # Change the index here if needed
     

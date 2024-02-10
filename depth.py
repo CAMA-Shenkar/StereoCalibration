@@ -4,8 +4,8 @@ import os
 
 
 
-focal_length_pixels = 1148  # Example focal length in pixels
-baseline_meters = 0.25  # Example baseline in meters
+focal_length_pixels = 359  # Example focal length in pixels
+baseline_meters = 0.15  # Example baseline in meters
 
 def ensure_dir(directory):
     if not os.path.exists(directory):
@@ -35,8 +35,8 @@ calib_filename = 'stereo_calibration_data.xml'  # Update this path as needed
 cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T = load_stereo_calibration(calib_filename)
 
 # Open the cameras
-cap_left = cv.VideoCapture(0)  # Adjust camera index as needed
-cap_right = cv.VideoCapture(1)  # Adjust camera index as needed
+cap_left = cv.VideoCapture(1)  # Adjust camera index as needed
+cap_right = cv.VideoCapture(2)  # Adjust camera index as needed
 
 
 
@@ -71,17 +71,18 @@ map1_right, map2_right = cv.initUndistortRectifyMap(
 
 # StereoSGBM Matcher for disparity calculation
 stereo = cv.StereoSGBM_create(
-    minDisparity=0,
-    numDisparities=16*3,
-    blockSize=5,
-    P1=8 * 3 * 5**2,
-    P2=32 * 3 * 5**2,
-    disp12MaxDiff=1,
-    uniquenessRatio=15,
-    speckleWindowSize=0,
-    speckleRange=2,
-    preFilterCap=63,
-    mode=cv.STEREO_SGBM_MODE_SGBM_3WAY
+    numDisparities=16, blockSize=15
+    # minDisparity=0,
+    # numDisparities=16*3,
+    # blockSize=5,
+    # P1=8 * 3 * 5**2,
+    # P2=32 * 3 * 5**2,
+    # disp12MaxDiff=1,
+    # uniquenessRatio=15,
+    # speckleWindowSize=0,
+    # speckleRange=2,
+    # preFilterCap=63,
+    # mode=cv.STEREO_SGBM_MODE_SGBM_3WAY
 )
 
 while True:
@@ -93,16 +94,17 @@ while True:
         print("Failed to capture images from both cameras.")
         break
 
-    # # Rectify images
-    rectified_left = cv.remap(frame_left, map1_left, map2_left, cv.INTER_LINEAR)
-    rectified_right = cv.remap(frame_right, map1_right, map2_right, cv.INTER_LINEAR)
-
     # Convert to grayscale for disparity calculation
-    gray_left = cv.cvtColor(rectified_left, cv.COLOR_BGR2GRAY)
-    gray_right = cv.cvtColor(rectified_right, cv.COLOR_BGR2GRAY)
+    gray_left = cv.cvtColor(frame_left, cv.COLOR_BGR2GRAY)
+    gray_right = cv.cvtColor(frame_right, cv.COLOR_BGR2GRAY)
+
+    # # Rectify images
+    rectified_left = cv.remap(gray_left, map1_left, map2_left, cv.INTER_LINEAR)
+    rectified_right = cv.remap(gray_right, map1_right, map2_right, cv.INTER_LINEAR)
+
 
     # Compute the disparity map
-    disparity = stereo.compute(gray_left, gray_right).astype(np.float32) / 16.0
+    disparity = stereo.compute(rectified_left, rectified_right).astype(np.float32) / 16.0
 
     ##
     #
@@ -142,7 +144,8 @@ while True:
     # Display the rectified images and disparity map
     cv.imshow('Rectified Left Camera POV', rectified_left)
     cv.imshow('Rectified Right Camera POV', rectified_right)
-    cv.imshow('Disparity Map', norm_disparity)
+    print(depth_map)
+    cv.imshow('Disparity Map', (depth_map*250/depth_map.max()).astype(int))
 
     key = cv.waitKey(1) & 0xFF
     if key == ord('q'):  # Quit program when 'q' key is pressed
